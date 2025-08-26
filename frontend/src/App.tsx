@@ -21,6 +21,9 @@ const App: React.FC = () => {
               <button className="text-secondary-300 hover:text-white px-3 py-2 text-sm font-medium">
                 Pricing
               </button>
+              <a href="/demo" className="text-secondary-300 hover:text-white px-3 py-2 text-sm font-medium">
+                Demo
+              </a>
               <button className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Get Started
               </button>
