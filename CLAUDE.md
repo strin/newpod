@@ -4,7 +4,7 @@ This document provides context and guidelines for Claude when working on this pr
 
 ## Project Overview
 
-[Add a brief description of your project, its purpose, and main technologies used]
+This project contains Modal apps for running AI models in the cloud, including VibeVoice for text-to-speech generation.
 
 ## Architecture
 
@@ -26,10 +26,17 @@ This document provides context and guidelines for Claude when working on this pr
 
 ### Build and Run Commands
 ```bash
-# Add common commands here
-# npm run dev
-# npm run build
-# npm test
+# Run Modal apps
+python3 -m modal run <app_name>.py
+
+# Deploy Modal app to production
+python3 -m modal deploy <app_name>.py
+
+# Check Modal authentication status
+python3 -m modal token new
+
+# Install dependencies
+pip3 install -r requirements.txt
 ```
 
 ## Important Considerations
