@@ -1,4 +1,5 @@
 import React from 'react'
+import Link from 'next/link'
 import { FiMic, FiVideo, FiShare2, FiZap, FiHeadphones, FiTrendingUp } from 'react-icons/fi'
 
 const App: React.FC = () => {
@@ -21,9 +22,9 @@ const App: React.FC = () => {
               <button className="text-secondary-300 hover:text-white px-3 py-2 text-sm font-medium">
                 Pricing
               </button>
-              <a href="/demo" className="text-secondary-300 hover:text-white px-3 py-2 text-sm font-medium">
+              <Link href="/demo" className="text-secondary-300 hover:text-white px-3 py-2 text-sm font-medium">
                 Demo
-              </a>
+              </Link>
               <button className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Get Started
               </button>
