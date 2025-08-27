@@ -1,6 +1,6 @@
 // API client for newpod backend services
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://tim-8--vibevoice-inference-generate-audio.modal.run'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://tim-8--vibevoice-v3-generate-audio.modal.run'
 
 export interface GenerateAudioRequest {
   transcript: string

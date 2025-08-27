@@ -5,7 +5,7 @@ import requests
 import json
 
 # The deployed API endpoint
-API_ENDPOINT = "https://tim-8--vibevoice-inference-generate-audio.modal.run"
+API_ENDPOINT = "https://tim-8--vibevoice-v4-generate-audio.modal.run"
 
 def test_api():
     # Test payload

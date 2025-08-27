@@ -17,7 +17,6 @@ image = (
         "torch>=2.0.0",
         "torchaudio",
         "transformers>=4.35.0",
-        "flash-attn==2.6.3",
         "soundfile",
         "librosa",
         "scipy",
@@ -53,33 +52,104 @@ def run_inference(model_path: str, txt_path: str, speaker_names: str) -> str:
         import subprocess
         import sys
         
-        # Try to run actual VibeVoice inference
+        # Try to run actual VibeVoice inference using the demo script
+        print(f"Attempting VibeVoice inference with model: {model_path}")
+        
         try:
-            # Create a simple voice mapping (using default voices)
+            # First, try the demo.inference_from_file script directly
+            # VibeVoice expects --output_dir not --output_path, and speaker names as separate args
+            output_dir = "/tmp/vibevoice_output"
+            os.makedirs(output_dir, exist_ok=True)
+            
             cmd = [
                 sys.executable, "-m", "demo.inference_from_file",
                 "--model_path", model_path,
                 "--txt_path", txt_path,
-                "--speaker_names", speaker_names,
-                "--output_path", output_path,
+                "--output_dir", output_dir,
+                "--device", "cuda",
             ]
+            
+            # Add speaker names as separate arguments
+            cmd.append("--speaker_names")
+            cmd.extend(speaker_names.split())  # Split speaker names into separate args
+            
+            print(f"Running command: {' '.join(cmd)}")
+            print(f"Working directory: {vibevoice_path}")
             
             result = subprocess.run(
                 cmd,
                 cwd=vibevoice_path,
                 capture_output=True,
                 text=True,
-                timeout=300  # 5 minute timeout
+                timeout=300,  # 5 minute timeout
+                env={**os.environ, "PYTHONPATH": f"/app/vibevoice:{os.environ.get('PYTHONPATH', '')}"}
             )
             
-            if result.returncode == 0 and os.path.exists(output_path):
-                print("VibeVoice inference successful")
-                return output_path
-            else:
-                print(f"VibeVoice failed: {result.stderr}")
+            print(f"VibeVoice return code: {result.returncode}")
+            if result.stdout:
+                print(f"VibeVoice stdout: {result.stdout}")
+            if result.stderr:
+                print(f"VibeVoice stderr: {result.stderr}")
+            
+            if result.returncode == 0:
+                # VibeVoice outputs to a directory, find the generated file
+                output_files = []
+                if os.path.exists(output_dir):
+                    for f in os.listdir(output_dir):
+                        if f.endswith(('.mp3', '.wav')):
+                            output_files.append(os.path.join(output_dir, f))
                 
+                if output_files:
+                    # Copy the first output file to our expected location
+                    import shutil
+                    shutil.copy2(output_files[0], output_path)
+                    print(f"✓ VibeVoice inference successful! Output: {output_files[0]}")
+                    return output_path
+                else:
+                    print(f"❌ VibeVoice completed but no audio files found in {output_dir}")
+            else:
+                print(f"❌ VibeVoice failed with return code {result.returncode}")
+                
+                # Try alternative approach: direct Python import and call
+                print("Trying direct Python import approach...")
+                try:
+                    sys.path.insert(0, '/app/vibevoice')
+                    from demo.inference_from_file import main as vibevoice_main
+                    
+                    # Mock sys.argv for the demo script
+                    import sys
+                    original_argv = sys.argv
+                    sys.argv = [
+                        'inference_from_file.py',
+                        '--model_path', model_path,
+                        '--txt_path', txt_path,
+                        '--output_dir', output_dir,
+                        '--device', 'cuda',
+                        '--speaker_names'
+                    ] + speaker_names.split()
+                    
+                    try:
+                        vibevoice_main()
+                        # Check for output files again
+                        if os.path.exists(output_dir):
+                            output_files = [f for f in os.listdir(output_dir) if f.endswith(('.mp3', '.wav'))]
+                            if output_files:
+                                import shutil
+                                shutil.copy2(os.path.join(output_dir, output_files[0]), output_path)
+                                print("✓ VibeVoice direct import successful!")
+                                return output_path
+                    finally:
+                        sys.argv = original_argv
+                        
+                except Exception as direct_err:
+                    print(f"Direct import approach failed: {direct_err}")
+                    
+        except subprocess.TimeoutExpired:
+            print("❌ VibeVoice inference timed out (5 minutes)")
         except Exception as e:
-            print(f"VibeVoice error: {e}")
+            print(f"❌ VibeVoice subprocess error: {e}")
+            
+        print("All VibeVoice attempts failed, falling back to synthetic audio")
     
     # Fallback: Generate simple audio using available tools
     try:
